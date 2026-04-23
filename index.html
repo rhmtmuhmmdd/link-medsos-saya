@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Find Me Online</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #060b18;
+      --surface: rgba(255,255,255,0.04);
+      --surface-hover: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.08);
+      --accent: #3b82f6;
+      --accent2: #06b6d4;
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --glow: rgba(59,130,246,0.15);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── Background atmosphere ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 0%, rgba(59,130,246,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(6,182,212,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(99,102,241,0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Subtle grid */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 52px;
+      opacity: 0;
+      transform: translateY(28px);
+      animation: fadeUp 0.8s cubic-bezier(0.22,1,0.36,1) 0.2s forwards;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 16px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      background: rgba(6,182,212,0.06);
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #f1f5f9 30%, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 14px;
+    }
+
+    .header h1 span {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.7;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.55s forwards;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .divider span {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── Link Cards ── */
+    .links-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .link-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      text-decoration: none;
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1),
+                  background 0.3s ease,
+                  border-color 0.3s ease,
+                  box-shadow 0.3s ease;
+      opacity: 0;
+      transform: translateY(24px);
+      cursor: pointer;
+    }
+
+    .link-card:hover {
+      background: var(--surface-hover);
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+    }
+
+    .link-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      border-radius: inherit;
+    }
+
+    .link-card:hover::before { opacity: 1; }
+
+    /* Per-platform accent glow */
+    .card-instagram::before { background: linear-gradient(135deg, rgba(225,48,108,0.08), rgba(193,53,132,0.04)); }
+    .card-instagram:hover { border-color: rgba(225,48,108,0.35); box-shadow: 0 12px 40px rgba(225,48,108,0.15), 0 0 0 1px rgba(225,48,108,0.2); }
+
+    .card-tiktok::before { background: linear-gradient(135deg, rgba(0,242,234,0.08), rgba(0,0,0,0.04)); }
+    .card-tiktok:hover { border-color: rgba(0,242,234,0.3); box-shadow: 0 12px 40px rgba(0,242,234,0.12), 0 0 0 1px rgba(0,242,234,0.2); }
+
+    .card-facebook::before { background: linear-gradient(135deg, rgba(24,119,242,0.08), rgba(24,119,242,0.04)); }
+    .card-facebook:hover { border-color: rgba(24,119,242,0.35); box-shadow: 0 12px 40px rgba(24,119,242,0.15), 0 0 0 1px rgba(24,119,242,0.2); }
+
+    .card-youtube::before { background: linear-gradient(135deg, rgba(255,0,0,0.08), rgba(200,0,0,0.04)); }
+    .card-youtube:hover { border-color: rgba(255,0,0,0.35); box-shadow: 0 12px 40px rgba(255,0,0,0.15), 0 0 0 1px rgba(255,0,0,0.2); }
+
+    .card-threads::before { background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); }
+    .card-threads:hover { border-color: rgba(255,255,255,0.25); box-shadow: 0 12px 40px rgba(255,255,255,0.08), 0 0 0 1px rgba(255,255,255,0.15); }
+
+    .card-website::before { background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(6,182,212,0.04)); }
+    .card-website:hover { border-color: rgba(59,130,246,0.35); box-shadow: 0 12px 40px rgba(59,130,246,0.15), 0 0 0 1px rgba(59,130,246,0.2); }
+
+    /* Logo */
+    .logo-wrap {
+      flex-shrink: 0;
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      transition: transform 0.3s ease;
+    }
+
+    .link-card:hover .logo-wrap { transform: scale(1.08); }
+
+    .logo-wrap img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+    }
+
+    /* Text */
+    .card-text {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 2px;
+    }
+
+    .card-handle {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    /* Arrow */
+    .arrow {
+      position: relative;
+      z-index: 1;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .link-card:hover .arrow {
+      transform: translateX(3px) rotate(-10deg);
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .arrow svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--muted);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.3s ease;
+    }
+
+    .link-card:hover .arrow svg { stroke: var(--text); }
+
+    /* Shimmer on hover */
+    .link-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -75%;
+      width: 50%;
+      height: 200%;
+      background: linear-gradient(105deg, transparent, rgba(255,255,255,0.05), transparent);
+      transform: skewX(-20deg);
+      transition: left 0.6s ease;
+    }
+    .link-card:hover::after { left: 125%; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease 1.4s forwards;
+    }
+
+    .footer p {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .footer p span {
+      color: var(--accent);
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Staggered card reveal */
+    .link-card:nth-child(1) { animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.7s forwards; }
+    .link-card:nth-child(2) { animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.82s forwards; }
+    .link-card:nth-child(3) { animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.94s forwards; }
+    .link-card:nth-child(4) { animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 1.06s forwards; }
+    .link-card:nth-child(5) { animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 1.18s forwards; }
+    .link-card:nth-child(6) { animation: fadeUp 0.6s cubic-bezier(0.22,1,0.36,1) 1.30s forwards; }
+
+    /* Floating particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(59,130,246,0.3);
+      animation: float linear infinite;
+    }
+
+    @keyframes float {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 0.5; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating particles -->
+  <div class="particles" id="particles"></div>
+
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="badge">✦ Connect with me</div>
+      <h1>Temukan Saya<br/>di <span>Social Media</span></h1>
+      <p>Ikuti perjalanan saya di berbagai platform. Konten menarik, update terbaru, dan banyak lagi menanti kamu.</p>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider"><span>Pilih platform favoritmu</span></div>
+
+    <!-- Links -->
+    <div class="links-list">
+
+      <!-- Instagram -->
+      <a class="link-card card-instagram" href="https://instagram.com/USERNAMEMU" target="_blank">
+        <div class="logo-wrap">
+          <img src="logo instagram.png" alt="Instagram" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23e1306c%22 stroke-width=%222%22><rect x=%222%22 y=%222%22 width=%2220%22 height=%2220%22 rx=%225%22/><circle cx=%2212%22 cy=%2212%22 r=%224%22/><circle cx=%2217.5%22 cy=%226.5%22 r=%221%22 fill=%22%23e1306c%22/></svg>'"/>
+        </div>
+        <div class="card-text">
+          <div class="card-name">Instagram</div>
+          <div class="card-handle">@usernamemu · Edit link di sini</div>
+        </div>
+        <div class="arrow">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </a>
+
+      <!-- TikTok -->
+      <a class="link-card card-tiktok" href="https://tiktok.com/@rhmtmuhmmdd" target="_blank">
+        <div class="logo-wrap">
+          <img src="logo tiktok.png" alt="TikTok" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2300f2ea%22><path d=%22M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z%22/></svg>'"/>
+        </div>
+        <div class="card-text">
+          <div class="card-name">TikTok</div>
+          <div class="card-handle">@rhmtmuhmmdd</div>
+        </div>
+        <div class="arrow">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </a>
+
+      <!-- Facebook -->
+      <a class="link-card card-facebook" href="https://www.facebook.com/share/1ik9KKjjQF/" target="_blank">
+        <div class="logo-wrap">
+          <img src="logo facebook.png" alt="Facebook" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%231877f2%22><path d=%22M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z%22/></svg>'"/>
+        </div>
+        <div class="card-text">
+          <div class="card-name">Facebook</div>
+          <div class="card-handle">Rahmat Muhammad</div>
+        </div>
+        <div class="arrow">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </a>
+
+      <!-- YouTube -->
+      <a class="link-card card-youtube" href="https://youtube.com/@rhmtmuhmmdd" target="_blank">
+        <div class="logo-wrap">
+          <img src="logo youtube.png" alt="YouTube" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%23ff0000%22><path d=%22M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z%22/></svg>'"/>
+        </div>
+        <div class="card-text">
+          <div class="card-name">YouTube</div>
+          <div class="card-handle">@rhmtmuhmmdd</div>
+        </div>
+        <div class="arrow">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </a>
+
+      <!-- Threads -->
+      <a class="link-card card-threads" href="https://threads.net/@rhmtmuhmmdd" target="_blank">
+        <div class="logo-wrap">
+          <img src="logo threads.png" alt="Threads" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22white%22><path d=%22M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.5 12.068c0-3.63.907-6.568 2.7-8.732C5.985 1.148 8.737 0 12.09 0c3.313.012 5.988 1.044 7.95 3.068 1.906 1.964 2.958 4.842 3.119 8.556l-2.11-.042c-.135-3.08-.98-5.45-2.514-7.043-1.514-1.57-3.667-2.364-6.437-2.376-2.766 0-4.902.774-6.35 2.3C4.317 5.906 3.62 8.37 3.62 12.068c0 3.583.739 6.124 2.197 7.552 1.42 1.39 3.47 2.096 6.092 2.126h.063c2.24-.016 3.979-.67 5.17-1.944.784-.843 1.316-1.967 1.586-3.35a7.208 7.208 0 01-2.95.617c-2.61 0-4.745-1.94-4.745-4.335 0-2.394 2.135-4.336 4.745-4.336.854 0 1.666.224 2.365.624v-.56h2.082v8.57c0 .202-.007.401-.02.594-.297 3.83-2.727 6.085-6.92 6.373zm3.56-10.78c0-1.244-1.175-2.254-2.618-2.254-1.442 0-2.618 1.01-2.618 2.254 0 1.243 1.176 2.254 2.618 2.254 1.443 0 2.618-1.01 2.618-2.254z%22/></svg>'"/>
+        </div>
+        <div class="card-text">
+          <div class="card-name">Threads</div>
+          <div class="card-handle">@rhmtmuhmmdd </div>
+        </div>
+        <div class="arrow">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </a>
+
+      <!-- Website -->
+      <a class="link-card card-website" href="rhmtmuhmmdd.vercel.app" target="_blank">
+        <div class="logo-wrap">
+          <img src="logo web.png" alt="Website" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%233b82f6%22 stroke-width=%222%22 stroke-linecap=%22round%22><circle cx=%2212%22 cy=%2212%22 r=%2210%22/><line x1=%222%22 y1=%2212%22 x2=%2222%22 y2=%2212%22/><path d=%22M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z%22/></svg>'"/>
+        </div>
+        <div class="card-text">
+          <div class="card-name">Website</div>
+          <div class="card-handle">rhmtmuhmmdd</div>
+        </div>
+        <div class="arrow">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+      </a>
+
+    </div><!-- /links-list -->
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Dibuat dengan <span>♥</span> · Semua platform dalam satu tempat</p>
+    </div>
+
+  </div><!-- /container -->
+
+  <script>
+    // Floating particles
+    const container = document.getElementById('particles');
+    const count = 18;
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('div');
+      p.classList.add('particle');
+      const size = Math.random() * 3 + 1.5;
+      p.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        left: ${Math.random() * 100}%;
+        opacity: ${Math.random() * 0.4 + 0.1};
+        animation-duration: ${Math.random() * 18 + 14}s;
+        animation-delay: -${Math.random() * 20}s;
+        background: ${Math.random() > 0.5 ? 'rgba(59,130,246,0.4)' : 'rgba(6,182,212,0.4)'};
+      `;
+      container.appendChild(p);
+    }
+
+    // Ripple effect on click
+    document.querySelectorAll('.link-card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        ripple.style.cssText = `
+          position:absolute; border-radius:50%;
+          width:4px; height:4px;
+          left:${x}px; top:${y}px;
+          background:rgba(255,255,255,0.3);
+          transform:scale(0); pointer-events:none;
+          animation:ripple 0.5s ease-out forwards;
+        `;
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+      });
+    });
+
+    // Ripple keyframe
+    const style = document.createElement('style');
+    style.textContent = `@keyframes ripple { to { transform:scale(80); opacity:0; } }`;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
